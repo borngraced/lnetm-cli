@@ -23,14 +23,13 @@ To use lnetm, make sure you have Rust installed on your Linux system. Then, foll
 To use lnetm, run the executable with the desired options and parameters. Here are the available options:
 
 lnetm [OPTIONS]
+- `-m`, `--monitor <MONITOR>`: What to monitor (latency, availability, or all) [default: all]
+- `-a`, `--addr <IP_ADDRS>`: Set IP addresses to monitor [required]
+- `-d`, `--data <DATA>`: Set data to ping to server [default: hello]
+- `-t`, `--threshold <THRESHOLD>`: Set threshold for latency (in seconds) [default: 10]
+- `-o`, `--timeout <TIMEOUT>`: Set timeout for latency monitoring (in seconds) [default: 10]
+- `-i`, `--interval <INTERVAL>`: Set monitoring interval (in seconds) [default: 10]
 
-OPTIONS:
--m, --monitor <MONITOR>      What to monitor (latency, availability, or all) [default: all]
--a, --addr <IP_ADDRS>        Set IP addresses to monitor [required]
--d, --data <DATA>            Set data to ping to server [default: hello]
--t, --threshold <THRESHOLD>  Set threshold for latency (in seconds) [default: 10]
--o, --timeout <TIMEOUT>      Set timeout for latency monitoring (in seconds) [default: 10]
--i, --interval <INTERVAL>    Set monitoring interval (in seconds) [default: 10]
 
 
 Example usage:
