@@ -1,5 +1,5 @@
 use crate::NetMCli;
-use log::{info, warn};
+use log::info;
 use notify_rust::Notification;
 use ping_rs::PingOptions;
 use std::net::Ipv4Addr;
@@ -34,7 +34,7 @@ pub fn check_network_latency(netm: &NetMCli) {
                     .body("High latency was detected while monitoring {addr}")
                     .show()
                     .unwrap();
-                warn!(
+                info!(
                     "{msg}, FAILURES: {}",
                     FAILURE_COUNT
                         .fetch_add(FAILURE_COUNT.load(Ordering::Relaxed), Ordering::Relaxed)

@@ -1,5 +1,5 @@
 use crate::NetMCli;
-use log::{info, warn};
+use log::info;
 use notify_rust::Notification;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::{process::Command, thread::sleep};
@@ -26,7 +26,7 @@ pub fn check_network_availability(netm: &NetMCli) {
             .body("The network device is not responding to pings")
             .show()
             .unwrap();
-        warn!(
+        info!(
             "{msg}, FAILURES: {}",
             FAILURE_COUNT.fetch_add(FAILURE_COUNT.load(Ordering::Relaxed), Ordering::Relaxed)
         );
