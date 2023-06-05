@@ -53,7 +53,7 @@ fn main() {
     }
 }
 #[derive(Debug, Clone)]
-struct NetMCli {
+pub struct NetMCli {
     kind: String,
     addrs: String,
     data: String,
@@ -158,27 +158,27 @@ impl NetMCli {
         }
     }
 
-    fn kind(&self) -> MonitorKind {
+    pub(crate) fn kind(&self) -> MonitorKind {
         MonitorKind::from(self.kind.clone())
     }
 
-    fn addrs(&self) -> String {
+    pub(crate) fn addrs(&self) -> String {
         self.addrs.clone()
     }
 
-    fn data(&self) -> &[u8] {
+    pub(crate) fn data(&self) -> &[u8] {
         self.data.as_bytes()
     }
 
-    fn interval(&self) -> Duration {
+    pub(crate) fn interval(&self) -> Duration {
         Duration::from_secs(self.interval)
     }
 
-    fn timeout(&self) -> Duration {
+    pub(crate) fn timeout(&self) -> Duration {
         Duration::from_secs(self.timeout)
     }
 
-    fn threshold(&self) -> u32 {
+    pub(crate) fn threshold(&self) -> u32 {
         self.threshold
     }
 }
