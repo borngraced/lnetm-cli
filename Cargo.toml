@@ -7,5 +7,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.3.1", features = [ "derive", "cargo" ] }
+env_logger = "0.10.0"
+log = "0.4.18"
 notify-rust = "4.8.0"
 ping-rs = "0.1.2"
