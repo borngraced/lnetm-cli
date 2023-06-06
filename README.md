@@ -1,5 +1,5 @@
 # lnetm - Linux Network Monitoring Tool
-### !!! WORK IN PROGRESS !!!
+
 lnetm is a command-line tool built in Rust for monitoring network latency and availability. It provides functionality to measure network latency and check the availability of network connections.
 
 ## Features
@@ -35,7 +35,7 @@ Example usage:
 
 - Monitor latency: `lnetm -m l -a 192.168.0.1` - `latency`
 - Monitor availability: `lnetm -m a -a 192.168.0.1` - `availability`
-- Monitor both latency and availability: `lnetm -m all -a 192.168.0.1`
+- Monitor both latency and availability: `lnetm -m -a 192.168.0.1`
 
 ## Contributing
 
