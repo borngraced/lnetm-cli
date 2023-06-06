@@ -1,0 +1,6 @@
+INFO - Network Availability monitoring is running
+INFO - Network availability is running
+INFO - Receive from Address 142.250.187.238 in 293.827568ms. ms
+INFO - High latency detected!, no. times detected: 1
+INFO - Receive from Address 142.250.187.238 in 341.528533ms. ms
+INFO - High latency detected!, no. times detected: 2

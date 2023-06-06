@@ -1,36 +1,35 @@
 use crate::NetMCli;
-use log::info;
 use notify_rust::Notification;
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::{process::Command, thread::sleep};
 
-const FAILURE_COUNT: AtomicU64 = AtomicU64::new(0);
+static mut FAILURE_COUNT: u64 = 0;
 
 pub fn check_network_availability(netm: &NetMCli) {
-    info!("Latency monitoring is running");
+    info!("Network Availability monitoring is running");
     let ip_address = &netm.addrs();
     let interval = netm.timeout();
-    let output = Command::new("ping")
-        .arg("-c")
-        .arg("1")
-        .arg(ip_address)
-        .output()
-        .expect("failed to execute process");
 
-    info!("{}", String::from_utf8_lossy(&output.stdout));
+    loop {
+        let output = Command::new("ping")
+            .arg("-c")
+            .arg("1")
+            .arg(ip_address)
+            .output()
+            .expect("failed to execute process");
 
-    if output.status.success() == false {
-        let msg = "Network device is unavailable";
-        Notification::new()
-            .summary(msg)
-            .body("The network device is not responding to pings")
-            .show()
-            .unwrap();
-        info!(
-            "{msg}, FAILURES: {}",
-            FAILURE_COUNT.fetch_add(FAILURE_COUNT.load(Ordering::Relaxed), Ordering::Relaxed)
-        );
+        if output.status.success() == false {
+            let msg = "Network device is unavailable";
+            unsafe {
+                FAILURE_COUNT += 1;
+                info!("{msg}, FAILURES: {}", FAILURE_COUNT);
+            }
+            // Notification::new()
+            //   .summary(msg)
+            // .body("The network device is not responding to pings - failure count: {FAILURE_COUNT}")
+            // .show()
+            // .unwrap();
+        }
+
+        sleep(interval)
     }
-
-    sleep(interval)
 }

@@ -25,7 +25,6 @@ To use lnetm, run the executable with the desired options and parameters. Here a
 lnetm [OPTIONS]
 - `-m`, `--monitor <MONITOR>`: What to monitor (latency, availability, or all) [default: all]
 - `-a`, `--addr <IP_ADDRS>`: Set IP addresses to monitor [required]
-- `-d`, `--data <DATA>`: Set data to ping to server [default: hello]
 - `-t`, `--threshold <THRESHOLD>`: Set threshold for latency (in seconds) [default: 10]
 - `-o`, `--timeout <TIMEOUT>`: Set timeout for latency monitoring (in seconds) [default: 10]
 - `-i`, `--interval <INTERVAL>`: Set monitoring interval (in seconds) [default: 10]
@@ -34,8 +33,8 @@ lnetm [OPTIONS]
 
 Example usage:
 
-- Monitor latency: `lnetm -m latency -a 192.168.0.1`
-- Monitor availability: `lnetm -m availability -a 192.168.0.1`
+- Monitor latency: `lnetm -m l -a 192.168.0.1` - `latency`
+- Monitor availability: `lnetm -m a -a 192.168.0.1` - `availability`
 - Monitor both latency and availability: `lnetm -m all -a 192.168.0.1`
 
 ## Contributing

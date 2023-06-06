@@ -1,48 +1,48 @@
 use crate::NetMCli;
-use log::info;
+use fastping_rs::Pinger;
 use notify_rust::Notification;
-use ping_rs::PingOptions;
-use std::net::Ipv4Addr;
-use std::str::FromStr;
-use std::sync::atomic::{AtomicU64, Ordering};
-use std::{net::IpAddr, thread::sleep};
+use std::thread::sleep;
 
-const FAILURE_COUNT: AtomicU64 = AtomicU64::new(0);
+static mut FAILURE_COUNT: u64 = 0;
 
 pub fn check_network_latency(netm: &NetMCli) {
     info!("Network availability is running");
-
-    let optons = PingOptions {
-        ttl: 128,
-        dont_fragment: true,
-    };
-    let parsed_addr = IpAddr::from(Ipv4Addr::from_str(&netm.addrs()).expect("A valid ip addr"));
-    let addr = &parsed_addr;
-    let data = netm.data();
-    let timeout = netm.timeout();
     let threshold = netm.threshold();
     let interval = netm.interval();
-    let ping_result = ping_rs::send_ping(addr, timeout, data, Some(&optons));
 
-    match ping_result {
-        Ok(reply) => {
-            info!("RTT: {:.2} ms", reply.rtt,);
-            if reply.rtt > threshold {
-                let msg = "High latency detected!";
-                Notification::new()
-                    .summary(msg)
-                    .body("High latency was detected while monitoring {addr}")
-                    .show()
-                    .unwrap();
-                info!(
-                    "{msg}, FAILURES: {}",
-                    FAILURE_COUNT
-                        .fetch_add(FAILURE_COUNT.load(Ordering::Relaxed), Ordering::Relaxed)
-                );
-            }
+    let (pinger, ping_result) = match Pinger::new(None, Some(56)) {
+        Ok((pinger, results)) => (pinger, results),
+        Err(e) => panic!("Error creating pinger: {}", e),
+    };
+
+    pinger.add_ipaddr(&netm.addrs());
+    pinger.run_pinger();
+
+    loop {
+        match ping_result.recv() {
+            Ok(result) => match result {
+                fastping_rs::PingResult::Idle { addr } => {
+                    error!("Idle Address {}.", addr);
+                }
+                fastping_rs::PingResult::Receive { addr, rtt } => {
+                    info!("Receive from Address {} in {:?}. ms", addr, rtt);
+                    if rtt.as_millis() > threshold as u128 {
+                        let msg = "High latency detected!";
+                        Notification::new()
+                            .summary(msg)
+                            .body("High latency was detected while monitoring {addr}")
+                            .show()
+                            .unwrap();
+                        unsafe {
+                            FAILURE_COUNT += 1;
+                            info!("{msg}, no. times detected: {}", FAILURE_COUNT);
+                        }
+                    }
+                }
+            },
+            Err(_) => warn!("Worker threads disconnected before the solution was found!"),
         }
-        Err(err) => println!("Error sending ping request: {err:?}"),
-    }
 
-    sleep(interval)
+        sleep(interval)
+    }
 }
