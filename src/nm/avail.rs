@@ -1,4 +1,5 @@
-use crate::NetMCli;
+use super::NetMCli;
+
 use log::info;
 use notify_rust::Notification;
 use std::{process::Command, thread::sleep};

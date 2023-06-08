@@ -11,11 +11,8 @@ use std::path::PathBuf;
 use std::process;
 use std::thread;
 
-mod netm_cli;
 mod nm;
-use netm_cli::{MonitorKind, NetMCli};
-
-use crate::nm::{check_network_availability, check_network_latency};
+use crate::nm::{check_network_availability, check_network_latency, MonitorKind, NetMCli};
 
 fn main() -> Result<(), Box<dyn Error>> {
     init_logging()?;

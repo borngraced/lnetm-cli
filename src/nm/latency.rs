@@ -1,4 +1,5 @@
-use crate::NetMCli;
+use super::NetMCli;
+
 use fastping_rs::Pinger;
 use log::{error, info};
 use notify_rust::Notification;
