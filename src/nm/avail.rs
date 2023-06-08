@@ -1,4 +1,5 @@
 use crate::NetMCli;
+use log::info;
 use notify_rust::Notification;
 use std::{process::Command, thread::sleep};
 
@@ -23,11 +24,11 @@ pub fn check_network_availability(netm: &NetMCli) {
                 FAILURE_COUNT += 1;
                 info!("{msg}, FAILURES: {}", FAILURE_COUNT);
             }
-            // Notification::new()
-            //   .summary(msg)
-            // .body("The network device is not responding to pings - failure count: {FAILURE_COUNT}")
-            // .show()
-            // .unwrap();
+            Notification::new()
+               .summary(msg)
+             .body("The network device is not responding to pings - failure count: {FAILURE_COUNT}")
+             .show()
+             .unwrap();
         }
 
         sleep(interval)

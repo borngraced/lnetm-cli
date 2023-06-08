@@ -30,6 +30,7 @@ pub struct NetMCli {
     interval: u64,
     timeout: u64,
     threshold: u32,
+    stop: bool,
 }
 
 impl NetMCli {
@@ -84,6 +85,14 @@ impl NetMCli {
                     .default_value("10")
                     .action(ArgAction::Set)
             )
+            .arg(
+                arg!(
+                -s --stop <INTERVAL> "Stop the daemonized process"
+            )
+                    .id("stop")
+                    .required(false)
+                    .action(ArgAction::SetTrue)
+            )
             .get_matches();
 
         let monitor_kind = matches
@@ -106,13 +115,14 @@ impl NetMCli {
             .get_one::<u32>("threshold")
             .map(|t| t.clone())
             .unwrap_or(THRESHOLD);
-
+        let stop = matches.get_flag("stop");
         Self {
             kind: monitor_kind,
             addrs,
             interval,
             timeout,
             threshold,
+            stop,
         }
     }
 
@@ -134,5 +144,9 @@ impl NetMCli {
 
     pub(crate) fn threshold(&self) -> u32 {
         self.threshold
+    }
+
+    pub(crate) fn stop(&self) -> bool {
+        self.stop
     }
 }

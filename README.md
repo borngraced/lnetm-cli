@@ -23,19 +23,49 @@ To use lnetm, make sure you have Rust installed on your Linux system. Then, foll
 To use lnetm, run the executable with the desired options and parameters. Here are the available options:
 
 lnetm [OPTIONS]
-- `-m`, `--monitor <MONITOR>`: What to monitor (latency, availability, or all) [default: all]
-- `-a`, `--addr <IP_ADDRS>`: Set IP addresses to monitor [required]
-- `-t`, `--threshold <THRESHOLD>`: Set threshold for latency (in seconds) [default: 10]
-- `-o`, `--timeout <TIMEOUT>`: Set timeout for latency monitoring (in seconds) [default: 10]
-- `-i`, `--interval <INTERVAL>`: Set monitoring interval (in seconds) [default: 10]
 
+- `-m`, `--monitor <MONITOR>`: Specifies what to monitor. Available options are:
+  - `latency` | `l`: Monitor network latency.
+  - `availability` | `a`: Monitor network availability.
+  - `all`: Monitor both latency and availability. (default)(can ommit)
 
+- `-a`, `--addr <IP_ADDRS>`: Specifies the IP addresses to monitor. This option is required. You can provide multiple IP addresses separated by commas.
+
+- `-t`, `--threshold <THRESHOLD>`: Specifies the threshold for latency. Latency values above this threshold will be considered as high latency. The threshold value should be specified in seconds. (default: 10)
+
+- `-o`, `--timeout <TIMEOUT>`: Specifies the timeout for latency monitoring. If the latency measurement exceeds this timeout value, it will be considered as a timeout. The timeout value should be specified in seconds. (default: 10)
+
+- `-i`, `--interval <INTERVAL>`: Specifies the monitoring interval. This determines how frequently the network will be monitored. The interval value should be specified in seconds. (default: 10)
+
+- `--stop`: Stops the lnetm daemon if it is currently running.
+
+Note: If you start multiple instances of lnetm with different monitoring options simultaneously, each instance will run independently and monitor the network based on its specific configuration.
 
 Example usage:
 
-- Monitor latency: `lnetm -m l -a 192.168.0.1` - `latency`
-- Monitor availability: `lnetm -m a -a 192.168.0.1` - `availability`
-- Monitor both latency and availability: `lnetm -m -a 192.168.0.1`
+- To monitor network latency for a single IP address with a threshold of 20 seconds and a monitoring interval of 5 seconds:
+
+    ```plaintext
+    lnetm -m l -a 192.168.0.1 -t 20 -i 5
+    ```
+
+- To monitor network availability for multiple IP addresses with the default threshold and interval:
+
+    ```plaintext
+    lnetm -m a -a 192.168.0.1,192.168.0.2,192.168.0.3
+    ```
+
+- To monitor both latency and availability for a single IP address with the default threshold and interval:
+
+    ```plaintext
+    lnetm -a 192.168.0.1
+    ```
+
+- To stop the lnetm daemon if it is running:
+
+    ```plaintext
+    lnetm -a 192.168.0.1 --stop
+    ```
 
 ## Contributing
 
