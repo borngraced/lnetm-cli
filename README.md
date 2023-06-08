@@ -13,7 +13,7 @@ lnetm is a command-line tool built in Rust for monitoring network latency and av
 
 To use lnetm, make sure you have Rust installed on your Linux system. Then, follow these steps:
 
-1. Clone the repository: `git clone https://github.com/your-username/lnetm.git`
+1. Clone the repository: `git clone https://github.com/borngraced/lnetm.git`
 2. Navigate to the project directory: `cd lnetm`
 3. Build the project: `cargo build --release`
 4. Run the lnetm executable: `./target/release/lnetm [OPTIONS]`
