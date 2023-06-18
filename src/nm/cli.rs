@@ -1,9 +1,9 @@
 use clap::*;
 use daemonize::Daemonize;
 use log::info;
-use std::{thread, process};
+use std::{process, thread};
 
-use crate::nm::{check_network_latency, check_network_availability};
+use crate::nm::{check_network_availability, check_network_latency};
 
 const MONITOR_KIND: &str = "all";
 const THRESHOLD: u32 = 100;
@@ -29,12 +29,12 @@ impl From<String> for MonitorKind {
 
 #[derive(Debug, Clone)]
 pub struct NetMCli {
-  pub(crate)   kind: MonitorKind,
-  pub(crate)   addrs: String,
-   pub(crate)  interval: u64,
-   pub(crate)   timeout: u64,
-    pub(crate)  threshold: u32,
-    pub(crate)  daemon: bool,
+    pub(crate) kind: MonitorKind,
+    pub(crate) addrs: String,
+    pub(crate) interval: u64,
+    pub(crate) timeout: u64,
+    pub(crate) threshold: u32,
+    pub(crate) daemon: bool,
     pub(crate) stop: bool,
 }
 
@@ -142,56 +142,55 @@ impl NetMCli {
         }
     }
 
-pub fn run(&self) {
-    if self.daemon {
-        self.run_as_daemon()
-    } else {
-        self.run_no_daemon()
-    }
-}
-    
-pub fn run_no_daemon(&self) {
-    info!("Starting lnetm daemon... ");
-
-            info!("... lnetm daemon started successfuly");
-            match self.kind {
-                MonitorKind::Latency => check_network_latency(&self),
-                MonitorKind::Availability => check_network_availability(&self),
-                MonitorKind::All => {
-                    let lnetm_clone = self.clone();
-                    thread::spawn(move || check_network_availability(&lnetm_clone));
-                    check_network_latency(&self);
-                }
-            }
-        
-}
-
-pub fn run_as_daemon(&self) {
-    info!("Starting lnetm daemon... ");
-    let start_daemon = Daemonize::new()
-        .pid_file("/tmp/lnetm.pid")
-        .chown_pid_file(false)
-        .working_directory("/tmp")
-        .group("daemon")
-        .start();
-
-    match start_daemon {
-        Ok(_) => {
-            info!("... lnetm daemon started successfuly");
-            match self.kind {
-                MonitorKind::Latency => check_network_latency(&self),
-                MonitorKind::Availability => check_network_availability(&self),
-                MonitorKind::All => {
-                    let lnetm_clone = self.clone();
-                    thread::spawn(move || check_network_availability(&lnetm_clone));
-                    check_network_latency(&self);
-                }
-            }
-        }
-        Err(err) => {
-            log::error!("Failed to daemonize: {}", err);
-            process::exit(1);
+    pub fn run(&self) {
+        if self.daemon {
+            self.run_as_daemon()
+        } else {
+            self.run_no_daemon()
         }
     }
-}
+
+    pub fn run_no_daemon(&self) {
+        info!("Starting lnetm daemon... ");
+
+        info!("... lnetm daemon started successfuly");
+        match self.kind {
+            MonitorKind::Latency => check_network_latency(&self),
+            MonitorKind::Availability => check_network_availability(&self),
+            MonitorKind::All => {
+                let lnetm_clone = self.clone();
+                thread::spawn(move || check_network_availability(&lnetm_clone));
+                check_network_latency(&self);
+            }
+        }
+    }
+
+    pub fn run_as_daemon(&self) {
+        info!("Starting lnetm daemon... ");
+        let start_daemon = Daemonize::new()
+            .pid_file("/tmp/lnetm.pid")
+            .chown_pid_file(false)
+            .working_directory("/tmp")
+            .group("daemon")
+            .start();
+
+        match start_daemon {
+            Ok(_) => {
+                info!("... lnetm daemon started successfuly");
+                match self.kind {
+                    MonitorKind::Latency => check_network_latency(&self),
+                    MonitorKind::Availability => check_network_availability(&self),
+                    MonitorKind::All => {
+                        let lnetm_clone = self.clone();
+                        thread::spawn(move || check_network_availability(&lnetm_clone));
+                        check_network_latency(&self);
+                    }
+                }
+            }
+            Err(err) => {
+                log::error!("Failed to daemonize: {}", err);
+                process::exit(1);
+            }
+        }
+    }
 }
