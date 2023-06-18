@@ -1,5 +1,9 @@
 use clap::*;
-use std::time::Duration;
+use daemonize::Daemonize;
+use log::info;
+use std::{thread, process};
+
+use crate::nm::{check_network_latency, check_network_availability};
 
 const MONITOR_KIND: &str = "all";
 const THRESHOLD: u32 = 100;
@@ -25,12 +29,13 @@ impl From<String> for MonitorKind {
 
 #[derive(Debug, Clone)]
 pub struct NetMCli {
-    kind: String,
-    addrs: String,
-    interval: u64,
-    timeout: u64,
-    threshold: u32,
-    stop: bool,
+  pub(crate)   kind: MonitorKind,
+  pub(crate)   addrs: String,
+   pub(crate)  interval: u64,
+   pub(crate)   timeout: u64,
+    pub(crate)  threshold: u32,
+    pub(crate)  daemon: bool,
+    pub(crate) stop: bool,
 }
 
 impl NetMCli {
@@ -84,10 +89,18 @@ impl NetMCli {
                     .value_parser(value_parser!(u64))
                     .default_value("10")
                     .action(ArgAction::Set)
+            ) 
+            .arg(
+                arg!(
+                --daemon <DAEMON> "Run program as daemon service"
+            )
+                    .id("daemon")
+                    .required(false)
+                    .action(ArgAction::SetTrue)
             )
             .arg(
                 arg!(
-                -s --stop <INTERVAL> "Stop the daemonized process"
+               --stop <STOP> "Stop the daemonized process"
             )
                     .id("stop")
                     .required(false)
@@ -116,37 +129,69 @@ impl NetMCli {
             .map(|t| t.clone())
             .unwrap_or(THRESHOLD);
         let stop = matches.get_flag("stop");
+        let daemon = matches.get_flag("stop");
+
         Self {
-            kind: monitor_kind,
+            kind: MonitorKind::from(monitor_kind),
             addrs,
             interval,
             timeout,
             threshold,
+            daemon,
             stop,
         }
     }
 
-    pub(crate) fn kind(&self) -> MonitorKind {
-        MonitorKind::from(self.kind.clone())
+pub fn run(&self) {
+    if self.daemon {
+        self.run_as_daemon()
+    } else {
+        self.run_no_daemon()
     }
+}
+    
+pub fn run_no_daemon(&self) {
+    info!("Starting lnetm daemon... ");
 
-    pub(crate) fn addrs(&self) -> String {
-        self.addrs.clone()
-    }
+            info!("... lnetm daemon started successfuly");
+            match self.kind {
+                MonitorKind::Latency => check_network_latency(&self),
+                MonitorKind::Availability => check_network_availability(&self),
+                MonitorKind::All => {
+                    let lnetm_clone = self.clone();
+                    thread::spawn(move || check_network_availability(&lnetm_clone));
+                    check_network_latency(&self);
+                }
+            }
+        
+}
 
-    pub(crate) fn interval(&self) -> Duration {
-        Duration::from_secs(self.interval)
-    }
+pub fn run_as_daemon(&self) {
+    info!("Starting lnetm daemon... ");
+    let start_daemon = Daemonize::new()
+        .pid_file("/tmp/lnetm.pid")
+        .chown_pid_file(false)
+        .working_directory("/tmp")
+        .group("daemon")
+        .start();
 
-    pub(crate) fn timeout(&self) -> Duration {
-        Duration::from_secs(self.timeout)
+    match start_daemon {
+        Ok(_) => {
+            info!("... lnetm daemon started successfuly");
+            match self.kind {
+                MonitorKind::Latency => check_network_latency(&self),
+                MonitorKind::Availability => check_network_availability(&self),
+                MonitorKind::All => {
+                    let lnetm_clone = self.clone();
+                    thread::spawn(move || check_network_availability(&lnetm_clone));
+                    check_network_latency(&self);
+                }
+            }
+        }
+        Err(err) => {
+            log::error!("Failed to daemonize: {}", err);
+            process::exit(1);
+        }
     }
-
-    pub(crate) fn threshold(&self) -> u32 {
-        self.threshold
-    }
-
-    pub(crate) fn stop(&self) -> bool {
-        self.stop
-    }
+}
 }

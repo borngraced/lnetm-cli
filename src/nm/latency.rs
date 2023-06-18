@@ -3,22 +3,22 @@ use super::NetMCli;
 use fastping_rs::Pinger;
 use log::{error, info};
 use notify_rust::Notification;
-use std::thread::sleep;
+use std::{thread::sleep, time::Duration};
 
 static mut FAILURE_COUNT: u64 = 0;
 
 pub fn check_network_latency(netm: &NetMCli) {
     loop {
         info!("Network availability is running");
-        let threshold = netm.threshold();
-        let interval = netm.interval();
+        let threshold = netm.threshold;
+        let interval = netm.interval;
 
         let (pinger, ping_result) = match Pinger::new(None, Some(56)) {
             Ok((pinger, results)) => (pinger, results),
             Err(e) => panic!("Error creating pinger: {}", e),
         };
 
-        pinger.add_ipaddr(&netm.addrs());
+        pinger.add_ipaddr(&netm.addrs);
         pinger.run_pinger();
 
         match ping_result.recv() {
@@ -35,15 +35,25 @@ pub fn check_network_latency(netm: &NetMCli) {
                             .body("High latency was detected while monitoring {addr}")
                             .show()
                             .unwrap();
+
                         unsafe {
                             FAILURE_COUNT += 1;
-                            info!("{msg}, no. times detected: {}", FAILURE_COUNT);
+                            info!("High latency was detected while monitoring {addr} - count: {FAILURE_COUNT}",);
+                            let not_msg = format!(
+                                "High latency was detected while monitoring {addr} - count: {FAILURE_COUNT}",
+                            );
+                            match Notification::new().summary(msg).body(&not_msg).show() {
+                                Ok(_) => info!("notification sent"),
+                                Err(err) => {
+                                    info!("error sending notification: {}", err.to_string())
+                                }
+                            };
                         }
                     }
                 }
             },
             Err(_) => error!("Worker threads disconnected before the solution was found!"),
         }
-        sleep(interval)
+        sleep(Duration::from_secs(interval))
     }
 }

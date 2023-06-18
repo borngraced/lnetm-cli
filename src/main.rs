@@ -1,56 +1,30 @@
-use daemonize::Daemonize;
+use log::info;
 use log::LevelFilter;
-use log::{error, info};
 use log4rs::append::console::ConsoleAppender;
 use log4rs::append::file::FileAppender;
 use log4rs::config::{Appender, Config, Root};
 use log4rs::encode::pattern::PatternEncoder;
+use nm::NetMCli;
 use std::error::Error;
 use std::fs;
 use std::path::PathBuf;
 use std::process;
-use std::thread;
 
 mod nm;
-use crate::nm::{check_network_availability, check_network_latency, MonitorKind, NetMCli};
 
 fn main() -> Result<(), Box<dyn Error>> {
-    init_logging()?;
-
     let netm = NetMCli::new();
-
-    if netm.stop() {
+    if netm.stop {
         stop_daemon()?;
         info!("Daemon stopped successfully.");
         process::exit(0);
     }
 
-    info!("Starting lnetm daemon...");
-    let start_daemon = Daemonize::new()
-        .pid_file("/tmp/lnetm.pid")
-        .chown_pid_file(true)
-        .working_directory("/tmp")
-        .group("daemon")
-        .start();
+    // initialize logging
+    init_logging()?;
 
-    match start_daemon {
-        Ok(_) => {
-            info!("lnetm daemon started successfully");
-            match netm.kind() {
-                MonitorKind::Latency => check_network_latency(&netm),
-                MonitorKind::Availability => check_network_availability(&netm),
-                MonitorKind::All => {
-                    let lnetm_clone = netm.clone();
-                    thread::spawn(move || check_network_availability(&lnetm_clone));
-                    check_network_latency(&netm);
-                }
-            }
-        }
-        Err(err) => {
-            error!("Failed to daemonize: {}", err);
-            process::exit(1);
-        }
-    }
+    // run program
+    netm.run();
 
     Ok(())
 }
@@ -62,7 +36,7 @@ fn init_logging() -> Result<(), Box<dyn Error>> {
     }
 
     let mut log_dir = dirs::home_dir().expect("Failed to get home directory");
-    log_dir.push("lnetm_logs");
+    log_dir.push("lnetm");
 
     if !log_dir.exists() {
         std::fs::create_dir(&log_dir).expect("Failed to create log directory");
@@ -77,7 +51,7 @@ fn init_logging() -> Result<(), Box<dyn Error>> {
 
     let logfile = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new("{d} {l}::{m}{n}\n")))
-        .build(log_path)?;
+        .build(log_path.clone())?;
 
     let config = Config::builder()
         .appender(Appender::builder().build("stdout", Box::new(stdout)))
@@ -90,6 +64,11 @@ fn init_logging() -> Result<(), Box<dyn Error>> {
         )?;
 
     log4rs::init_config(config)?;
+    info!(
+        "... log initialized successfuly at: {:?}",
+        log_path.as_path()
+    );
+
     Ok(())
 }
 

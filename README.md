@@ -37,6 +37,7 @@ lnetm [OPTIONS]
 
 - `-i`, `--interval <INTERVAL>`: Specifies the monitoring interval. This determines how frequently the network will be monitored. The interval value should be specified in seconds. (default: 10)
 
+- `--daemon`: Run lnetm as a daemon.
 - `--stop`: Stops the lnetm daemon if it is currently running.
 
 Note: If you start multiple instances of lnetm with different monitoring options simultaneously, each instance will run independently and monitor the network based on its specific configuration.
@@ -49,10 +50,10 @@ Example usage:
     lnetm -m l -a 192.168.0.1 -t 20 -i 5
     ```
 
-- To monitor network availability for multiple IP addresses with the default threshold and interval:
+- To monitor network availability with daemon and with the default threshold and interval:
 
     ```plaintext
-    lnetm -m a -a 192.168.0.1,192.168.0.2,192.168.0.3
+    lnetm -m a -a 192.168.0.1 --daemon
     ```
 
 - To monitor both latency and availability for a single IP address with the default threshold and interval:
