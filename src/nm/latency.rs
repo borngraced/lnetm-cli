@@ -43,7 +43,7 @@ pub fn check_network_latency(netm: &NetMCli) {
                                 "High latency was detected while monitoring {addr} - count: {FAILURE_COUNT}",
                             );
                             match Notification::new().summary(msg).body(&not_msg).show() {
-                                Ok(_) => info!("notification sent"),
+                                Ok(_) => (),
                                 Err(err) => {
                                     info!("error sending notification: {}", err.to_string())
                                 }

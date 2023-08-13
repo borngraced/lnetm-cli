@@ -32,7 +32,7 @@ pub fn check_network_availability(netm: &NetMCli) {
                     FAILURE_COUNT
                 );
                 match Notification::new().summary(msg).body(&not_msg).show() {
-                    Ok(_) => info!("notification sent"),
+                    Ok(_) => (),
                     Err(err) => info!("error sending notification: {}", err.to_string()),
                 };
             }

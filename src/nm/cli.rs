@@ -129,7 +129,7 @@ impl NetMCli {
             .map(|t| t.clone())
             .unwrap_or(THRESHOLD);
         let stop = matches.get_flag("stop");
-        let daemon = matches.get_flag("stop");
+        let daemon = matches.get_flag("daemon");
 
         Self {
             kind: MonitorKind::from(monitor_kind),
